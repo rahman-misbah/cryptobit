@@ -163,6 +163,13 @@ class BitBlock:
     def data(self) -> int:
         return self.__data
     
+    @data.setter
+    def data(self, value: types.RawData) -> None:
+        if not types.is_valid_raw_data(value, self.__block_size):
+            raise TypeError("Data must be an integer or bytes with length less than or equal to block size.")
+        
+        self.__data = _set_data(value) & self.__mask  # Ensure data fits within the block size
+    
     # PUBLIC METHODS
 
     def to_bytes(self) -> bytes:
