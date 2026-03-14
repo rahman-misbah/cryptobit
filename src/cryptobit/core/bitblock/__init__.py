@@ -5,7 +5,7 @@ of bits, with support for bit-level operations and conversions.
 """
 
 # Import the public class from its module
-from .core import BitBlock
+from .bitblock import BitBlock
 
 # Define the public API
 __all__ = ['BitBlock']
