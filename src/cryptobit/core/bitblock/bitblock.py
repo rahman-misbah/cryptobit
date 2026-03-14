@@ -1,4 +1,4 @@
-from typing import Optional, TypeIs
+from typing import Union, Optional, TypeIs
 from . import _bitblock_types as types
 
 class BitBlock:
@@ -29,9 +29,9 @@ class BitBlock:
 
         # Validate data
         if not types.is_valid_raw_data(data, block_size):
-            raise ValueError("Data must be an integer or bytes with length less than or equal to block size.")
+            raise ValueError("Data must be an integer, bytes with length less than or equal to block size, or a BitBlock instance with the same block size.")
         
-        self.__data = _set_data(data)
+        self.__data = _set_data(data, block_size)
 
         # Generate a mask to ensure data fits within the block size
         self.__mask = (1 << block_size) - 1
@@ -164,9 +164,9 @@ class BitBlock:
         return self.__data
     
     @data.setter
-    def data(self, value: types.RawData) -> None:
-        if not types.is_valid_raw_data(value, self.__block_size):
-            raise TypeError("Data must be an integer or bytes with length less than or equal to block size.")
+    def data(self, value: Union[types.RawData, BitBlock]) -> None:
+        if not types.is_valid_raw_data(value, self.__block_size) and not isinstance(value, BitBlock):
+            raise TypeError("Data must be an integer, bytes with length less than or equal to block size, or a BitBlock instance with the same block size.")
         
         self.__data = _set_data(value) & self.__mask  # Ensure data fits within the block size
     
@@ -244,7 +244,7 @@ def is_valid_block_size(block_size: int) -> TypeIs[int]:
         return True
     return False
 
-def _set_data(data: Optional[types.RawData]) -> int:
+def _set_data(data: Optional[types.RawData], block_size: int = None) -> int:
     """Convert the input data to an integer."""
     if data is None:
         return 0
@@ -252,6 +252,9 @@ def _set_data(data: Optional[types.RawData]) -> int:
         return data
     if isinstance(data, bytes):
         return int.from_bytes(data, byteorder='big')
+    if isinstance(data, BitBlock):
+        return data.data
+
 
 def _is_valid_position(position: int, block_size: int) -> bool:
     """Check if the position is valid for the given block size."""
